@@ -1,0 +1,30 @@
+{
+  "name": "email2username",
+  "version": "1.0.0",
+  "description": "A bijective email to username converter with seeds for easy back and front-end development and also for respecting user privacy",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bacloud22/email2username.git"
+  },
+  "keywords": [
+    "email",
+    "username",
+    "privacy",
+    "generate",
+    "unique",
+    "random"
+  ],
+  "author": "bacloud14@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bacloud22/email2username/issues"
+  },
+  "homepage": "https://github.com/bacloud22/email2username#readme",
+  "dependencies": {
+    "email-validator": "^2.0.4"
+  }
+}

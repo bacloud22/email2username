@@ -21,7 +21,7 @@ function Email2Username(seed, length, baseDomains) {
   if (typeof length !== "undefined") {
     if (typeof length !== "Number" || !Number.isInteger(length) || length < 3)
       throw Error(
-        "'length' must be an natural number greater or equal to 3. We advice >= 4"
+        "'length' must be an natural number greater or equal to 3. We advice and *even* length >= 4"
       );
     else if (
       typeof baseDomains === "undefined" ||
@@ -46,29 +46,46 @@ function Email2Username(seed, length, baseDomains) {
   shuffle(this.alphabet, this.shuffleSeed);
 
   /**
-   * @@@@@@@@@@@@@@@@@@@@@@
+   * "'Email2Username#toUsername' takes an email and returns a username"
    * @param  {String} email
    * @return {String}
    */
   this.toUsername = (email) => {
-    if (!validator.validate(email))
-      throw (Error("email is invalid")[(this.email, this.domain)] = email
-        .split("@")
-        .map((part) => part.split("")));
+    if (!validator.validate(email)) {
+      throw Error("email is invalid");
+    }
+    [this.email, this.domain] = email.split("@").map((part) => part.split(""));
     shuffle(this.domain, this.shuffleSeed);
-    secretDomain = this.domain.map((char) => this.alphabet.indexOf(char));
+    secretDomain = this.domain.map((char) => {
+      const index = this.alphabet.indexOf(char)
+      if (index < 10) // turn one digit to two (1 -> 01)
+        return '0'+index
+      return ''+index
+    });
+    // we use section sign as a separator as it is not allowed in an email
+    const separator = "§";
     // because alphabet is of length 38, each character is mapped to a number of two digits (characters)
-    return this.email + secretDomain.slice(0, length).join();
+    return this.email + separator + secretDomain.slice(0, length).join('');
   };
 
   /**
-   * toEmail can theoretically recover the email if length has not been provided at first
-   * But if length is provided, we cannot recover for instance the email from 'user455645',
-   * thus, with the help of base domains we can recover the original email.
+   * "Email2Username#toEmail" can theoretically recover the email if 'length' has not been provided at first
+   * But if 'length' is provided, we cannot recover for instance the email from 'user455645',
+   * thus, with the help of 'baseDomains' we can recover the original email.
    * @param  {String} username
    * @return {String}
    */
-  this.toEmail = (username) => {};
+  this.toEmail = (username) => {
+    const separator = "§";
+    let [username, secretDomain] = username.split(separator);
+    // recover original domain
+    if (this.length % 2 === 1) length--;
+    secretDomain = secretDomain.match(/.{1,2}/g).map(Number) // split by two
+    const domain = secretDomain.map(code => {
+      return this.alphabet.slice(code, code+1)
+    }).join('')
+    // TODO: wip
+  };
 }
 /**
  * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@

@@ -19,7 +19,7 @@ function shuffle(array, seed) {
 
 function Email2Username(seed, length, baseDomains) {
   if (typeof length !== "undefined") {
-    if (typeof length !== "Number" || !Number.isInteger(length) || length < 3)
+    if (typeof length !== "number" || !Number.isInteger(length) || length < 3)
       throw Error(
         "'length' must be an natural number greater or equal to 3. We advice and *even* length >= 4"
       );
@@ -33,11 +33,11 @@ function Email2Username(seed, length, baseDomains) {
       );
   } else {
     console.warn(
-      "Without length, 'username' would be very long and maybe not user friendly.\n" +
+      "Without length, 'username' would be very long and may not be user friendly.\n" +
         "'baseDomains' is optional in this case. This is fine and advised for mapping in backend"
     );
   }
-  if (typeof seed !== "Number") throw Error("'seed' must be a number");
+  if (typeof seed !== "number") throw Error("'seed' must be a number");
   this.length = length;
   this.seed = random(seed);
   this.shuffleSeed = 1 / this.seed;
@@ -57,15 +57,18 @@ function Email2Username(seed, length, baseDomains) {
     [this.email, this.domain] = email.split("@").map((part) => part.split(""));
     shuffle(this.domain, this.shuffleSeed);
     secretDomain = this.domain.map((char) => {
-      const index = this.alphabet.indexOf(char)
-      if (index < 10) // turn one digit to two (1 -> 01)
-        return '0'+index
-      return ''+index
+      const index = this.alphabet.indexOf(char);
+      if (index < 10)
+        // turn one digit to two (1 -> 01)
+        return "0" + index;
+      return "" + index;
     });
     // we use section sign as a separator as it is not allowed in an email
     const separator = "§";
     // because alphabet is of length 38, each character is mapped to a number of two digits (characters)
-    return this.email + separator + secretDomain.slice(0, length).join('');
+    return (
+      this.email.join("") + separator + secretDomain.slice(0, length).join("")
+    );
   };
 
   /**
@@ -75,16 +78,18 @@ function Email2Username(seed, length, baseDomains) {
    * @param  {String} username
    * @return {String}
    */
-  this.toEmail = (username) => {
+  this.toEmail = (username_) => {
     const separator = "§";
-    let [username, secretDomain] = username.split(separator);
+    let [username, secretDomain] = username_.split(separator);
     // recover original domain
     if (this.length % 2 === 1) length--;
-    secretDomain = secretDomain.match(/.{1,2}/g).map(Number) // split by two
-    const domain = secretDomain.map(code => {
-      return this.alphabet.slice(code, code+1)
-    }).join('')
-    // TODO: wip
+    secretDomain = secretDomain.match(/.{1,2}/g).map(Number); // split by two
+    const domain = secretDomain
+      .map((code) => {
+        return this.alphabet[code];
+      })
+      .join("");
+    return username + "@" + domain;
   };
 }
 /**

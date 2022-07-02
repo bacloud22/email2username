@@ -21,7 +21,7 @@ function Email2Username(seed, length, baseDomains) {
   if (typeof length !== "undefined") {
     if (typeof length !== "number" || !Number.isInteger(length) || length < 3)
       throw Error(
-        "'length' must be an natural number greater or equal to 3. We advice and *even* length >= 4"
+        "'length' must be a natural number greater or equal to 3. We advice an *even* of length >= 4"
       );
     else if (
       typeof baseDomains === "undefined" ||
@@ -38,7 +38,8 @@ function Email2Username(seed, length, baseDomains) {
     );
   }
   if (typeof seed !== "number") throw Error("'seed' must be a number");
-  this.length = length;
+  this.length = length * 2;
+  this.baseDomains = baseDomains;
   this.seed = random(seed);
   this.shuffleSeed = 1 / this.seed;
   // Domain allowed characters: letters, numbers, dashes, one period
@@ -79,19 +80,44 @@ function Email2Username(seed, length, baseDomains) {
    * @return {String}
    */
   this.toEmail = (username_) => {
+    let domain;
     const separator = "§";
     let [username, secretDomain] = username_.split(separator);
     // recover original domain
-    if (this.length % 2 === 1) length--;
-    secretDomain = secretDomain.match(/.{1,2}/g).map(Number); // split by two
-    const domain = secretDomain
+    if (!this.length) {
+      secretDomain = secretDomain.match(/.{1,2}/g).map(Number);
+      domain = secretDomain
+        .map((code) => {
+          return this.alphabet[code];
+        })
+        .join("");
+      return username + "@" + domain;
+    }
+    secretDomain = secretDomain
+      .slice(0, this.length)
+      .match(/.{1,2}/g)
+      .map(Number);
+    // split by two
+    domain = secretDomain
       .map((code) => {
         return this.alphabet[code];
       })
       .join("");
-    return username + "@" + domain;
+    let possibleDomains = this.baseDomains
+      .map((dom) => {
+        return {
+          score: dom.indexOf(domain) > -1 && 1 / (dom.length - domain.length),
+          domain: dom,
+        };
+      })
+      .filter((scored) => scored.score)
+      .sort((scored) => scored.score);
+    if (possibleDomains.length)
+      return username + "@" + possibleDomains[0].domain;
+    else return username + "@" + domain;
   };
 }
+
 /**
  * @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
  */
